@@ -1,0 +1,45 @@
+{
+    "test_suite": "qwen2.5_parameter_optimization",
+    "configurations": [
+        {
+            "name": "Precise Technical Analysis",
+            "command": "python main.py --query \"Analyze the system's core architectural components\" --temperature 0.1 --n_predict 2048 --repeat-penalty 1.1 --top-p 0.95 --top-k 40",
+            "description": "Testing precise, factual responses with default parameters"
+        },
+        {
+            "name": "Balanced Technical Analysis",
+            "command": "python main.py --query \"Analyze the system's architecture focusing on maintainability\" --temperature 0.2 --n_predict 2048 --repeat-penalty 1.2 --top-p 0.92 --top-k 50",
+            "description": "Testing balanced creativity and precision"
+        },
+        {
+            "name": "Creative Technical Solutions",
+            "command": "python main.py --query \"Suggest improvements for the system architecture\" --temperature 0.3 --n_predict 2048 --repeat-penalty 1.3 --top-p 0.85 --top-k 60",
+            "description": "Testing more creative responses while maintaining coherence"
+        },
+        {
+            "name": "Implementation Details Low Temperature",
+            "command": "python main.py --query \"Explain the file processing implementation\" --temperature 0.1 --n_predict 2048 --repeat-penalty 1.15 --top-p 0.97 --top-k 30",
+            "description": "Testing precise technical explanations"
+        },
+        {
+            "name": "Implementation Details Medium Temperature",
+            "command": "python main.py --query \"Review the document loading system\" --temperature 0.25 --n_predict 2048 --repeat-penalty 1.25 --top-p 0.9 --top-k 45",
+            "description": "Testing balanced technical descriptions"
+        },
+        {
+            "name": "Performance Analysis Precise",
+            "command": "python main.py --query \"Analyze system performance bottlenecks\" --temperature 0.15 --n_predict 4096 --repeat-penalty 1.2 --top-p 0.93 --top-k 35",
+            "description": "Testing analytical precision with longer context"
+        },
+        {
+            "name": "Performance Analysis Creative",
+            "command": "python main.py --query \"Suggest performance optimizations\" --temperature 0.35 --n_predict 4096 --repeat-penalty 1.1 --top-p 0.88 --top-k 55",
+            "description": "Testing creative problem-solving with longer context"
+        },
+        {
+            "name": "Integration Requirements Low Temp",
+            "command": "python main.py --query \"List core requirements for PDF integration\" --temperature 0.1 --n_predict 2048 --repeat-penalty 1.3 --top-p 0.95 --top-k 40",
+            "description": "Testing precise requirement gathering"
+        }
+    ]
+}

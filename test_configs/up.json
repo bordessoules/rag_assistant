@@ -1,0 +1,8 @@
+{
+    "test_suite": "design_patterns",
+    "configurations": [
+        {
+            "name": "DesignPatternAnalysis",
+            "command": "python main.py --query \"You are a software architect reviewing this Python codebase. Analyze: 1) Current patterns in config.py, main.py, testeur.py, and lm_studio.py 2) Pattern details including location, implementation, pros/cons 3) Three recommended new patterns with code examples 4) Testing strategy 5) Migration plan. Format in markdown.\""}    
+        ]
+}

@@ -1,0 +1,110 @@
+{
+    "test_suite": "system_analysis_tests_comparative",
+    "configurations": [
+        {
+            "name": "Foundational Architecture Review",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.1 --n_predict 2048",
+            "temperature": 0.1,
+            "n_predict": 2048,
+            "description": "Tests precision with minimal token count"
+        },
+        {
+            "name": "Detailed Architecture Analysis",
+            "command": "python main.py --query \"Analyze the system's architecture with focus on scalability and maintainability\" --temperature 0.2 --n_predict 4096",
+            "temperature": 0.2,
+            "n_predict": 4096,
+            "description": "Evaluates moderate temperature impact on technical analysis"
+        },
+        {
+            "name": "Innovative Architecture Assessment",
+            "command": "python main.py --query \"Analyze the system's architecture and suggest innovative improvements\" --temperature 0.4 --n_predict 4096",
+            "temperature": 0.4,
+            "n_predict": 4096,
+            "description": "Tests creative capabilities in technical context"
+        },
+        {
+            "name": "Technical Implementation Analysis",
+            "command": "python main.py --query \"Explain the implementation details of file hash tracking and document processing\" --temperature 0.1 --n_predict 4096",
+            "temperature": 0.1,
+            "n_predict": 4096,
+            "description": "Assesses technical precision in implementation details"
+        },
+        {
+            "name": "Advanced Implementation Review",
+            "command": "python main.py --query \"Review advanced aspects of file processing including error handling and edge cases\" --temperature 0.2 --n_predict 6144",
+            "temperature": 0.2,
+            "n_predict": 6144,
+            "description": "Tests deeper technical understanding with increased tokens"
+        },
+        {
+            "name": "Creative Implementation Solutions",
+            "command": "python main.py --query \"Propose creative solutions for improving file processing and hash tracking\" --temperature 0.5 --n_predict 8192",
+            "temperature": 0.5,
+            "n_predict": 8192,
+            "description": "Evaluates high-temperature creative problem solving"
+        },
+        {
+            "name": "Critical Performance Review",
+            "command": "python main.py --query \"Identify and analyze critical performance bottlenecks in the current implementation\" --temperature 0.1 --n_predict 8192",
+            "temperature": 0.1,
+            "n_predict": 8192,
+            "description": "Tests analytical precision in performance analysis"
+        },
+        {
+            "name": "Comprehensive Performance Analysis",
+            "command": "python main.py --query \"Provide detailed performance analysis with metrics and optimization strategies\" --temperature 0.3 --n_predict 16384",
+            "temperature": 0.3,
+            "n_predict": 16384,
+            "description": "Evaluates detailed analysis with expanded token limit"
+        },
+        {
+            "name": "Innovative Performance Solutions",
+            "command": "python main.py --query \"Propose innovative and unconventional approaches to performance optimization\" --temperature 0.6 --n_predict 24576",
+            "temperature": 0.6,
+            "n_predict": 24576,
+            "description": "Tests high-creativity performance improvements"
+        },
+        {
+            "name": "Basic Integration Requirements",
+            "command": "python main.py --query \"Outline the basic requirements for PDF document integration\" --temperature 0.1 --n_predict 4096",
+            "temperature": 0.1,
+            "n_predict": 4096,
+            "description": "Assesses basic technical planning"
+        },
+        {
+            "name": "Detailed Integration Planning",
+            "command": "python main.py --query \"Develop a detailed plan for PDF integration including error handling\" --temperature 0.3 --n_predict 8192",
+            "temperature": 0.3,
+            "n_predict": 8192,
+            "description": "Tests moderate-temperature technical planning"
+        },
+        {
+            "name": "Advanced Integration Design",
+            "command": "python main.py --query \"Design an innovative approach to handling multiple document formats\" --temperature 0.5 --n_predict 16384",
+            "temperature": 0.5,
+            "n_predict": 16384,
+            "description": "Evaluates creative integration approaches"
+        },
+        {
+            "name": "System Extension Foundations",
+            "command": "python main.py --query \"Outline fundamental requirements for adding web reading capabilities\" --temperature 0.1 --n_predict 8192",
+            "temperature": 0.1,
+            "n_predict": 8192,
+            "description": "Tests basic extension planning"
+        },
+        {
+            "name": "Comprehensive System Evolution",
+            "command": "python main.py --query \"Design a comprehensive plan for system evolution including web reading and database integration\" --temperature 0.3 --n_predict 24576",
+            "temperature": 0.3,
+            "n_predict": 24576,
+            "description": "Assesses complex system planning"
+        },
+        {
+            "name": "Innovative System Transformation",
+            "command": "python main.py --query \"Propose innovative approaches to transform the system into a versatile document processing platform\" --temperature 0.7 --n_predict 32768",
+            "temperature": 0.7,
+            "n_predict": 32768,
+            "description": "Tests maximum creativity with full token allocation"
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+    "test_suite": "system_analysis_tests_comparative",
+    "configurations": [
+        {
+            "name": "Foundational Architecture Review (temp=0.1)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.1 "
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.2)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.2 "
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.3)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.3 "
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.4)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.4"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.5)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.5"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.6)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.6"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.7)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.7"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.8)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.8"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.9)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.9"
+        },
+        {
+            "name": "Foundational Architecture Review (temp=0.45) claude guess",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "test_suite": "parameter_optimization_tests",
+    "configurations": [
+        {
+            "name": "Architecture Analysis (top_p=0.88, min_p=0.04)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45 --top-p 0.88 --min-p 0.04"
+        },
+        {
+            "name": "Architecture Analysis (top_p=0.89, min_p=0.045)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45 --top-p 0.89 --min-p 0.045"
+        },
+        {
+            "name": "Architecture Analysis (top_p=0.90, min_p=0.05)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45 --top-p 0.90 --min-p 0.05"
+        },
+        {
+            "name": "Architecture Analysis (top_p=0.91, min_p=0.055)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45 --top-p 0.91 --min-p 0.055"
+        },
+        {
+            "name": "Architecture Analysis (top_p=0.92, min_p=0.06)",
+            "command": "python main.py --query \"Analyze the system's core architectural components and their interactions\" --temperature 0.45 --top-p 0.92 --min-p 0.06"
+        }
+    ]
+}
