@@ -73,8 +73,8 @@ class TestRunner:
         
         for idx, test in enumerate(self.config["configurations"], 1):
             # Add model profile to command
-            if "--model-profile" not in test['command']:
-                test['command'] += f" --model-profile {self.model_name}"
+            if "--model_profile" not in test['command']:
+                test['command'] += f" --model_profile {self.model_name}"
             logging.info(f"\nTest {idx}/{total_tests}: {test['name']}\n  -command : {test['command']}")
         
             start_time = datetime.now()
@@ -109,7 +109,7 @@ class TestRunner:
 
     def _log_result(self, test, result, duration):
         # Main log always gets the LLM response
-        logging.info(f"\nTest: {test['name']}")
+        logging.info(f"\nTest: {test['name']} with command: {test['command']}")
         logging.info(f"Duration: {duration:.2f}s")
         logging.info("LLM Response:")
         logging.info(result.stdout)

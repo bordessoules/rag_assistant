@@ -2,7 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import logging
@@ -32,12 +32,21 @@ class DocumentLoader:
         with open(self.processed_files_path, 'w') as f:
             json.dump(self.processed_files, f)
 
-    def _get_file_hash(self, file_path):
-        with open(file_path, 'rb') as f:
-            return hashlib.md5(f.read()).hexdigest()
-
+    def _get_hash(self, content: Union[str, bytes]) -> str:
+        """
+        Generate hash from content, handling both string and bytes input.
+        
+        Args:
+            content: Either string or bytes to hash
+            
+        Returns:
+            str: MD5 hash of content
+        """
+        if isinstance(content, str):
+            return hashlib.md5(content.encode()).hexdigest()
+        return hashlib.md5(content).hexdigest()
     def load_file(self, file_path: str) -> List:
-        file_hash = self._get_file_hash(file_path)
+        file_hash = self._get_hash(file_path)
         
         # Check if file was already processed and hasn't changed
         if file_path in self.processed_files:
@@ -94,5 +103,13 @@ class DocumentLoader:
             )
         return RecursiveCharacterTextSplitter(
             chunk_size=settings.CHUNK_SIZE,
-            chunk_overlap=settings.CHUNK_OVERLAP
+            chunk_overlap=settings.CHUNK_OVERLAP,
+            separators=[
+                "<h1", "<h2", "<h3",  # Header tags
+                "<div", "</div>",     # Major section breaks
+                "<p>", "</p>",        # Paragraph breaks
+                "\n\n", "\n",         # Natural text breaks
+                ". ",                 # Sentence breaks
+                " "                   # Word breaks
+            ]
         )

@@ -1,6 +1,6 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings
-from typing import Dict, Any
+from typing import Dict
 
 class LLMProfile:
     def __init__(self, **kwargs):
@@ -9,7 +9,7 @@ class LLMProfile:
         self.min_p = kwargs.get('min_p', 0.05)
         self.top_k = kwargs.get('top_k', 40)
         self.repeat_penalty = kwargs.get('repeat_penalty', 1.1)
-        self.n_predict = kwargs.get('n_predict', 32768)
+        self.max_tokens = kwargs.get('max_tokens', 32768)
         self.context_size = kwargs.get('context_size', 32768)
         self.eval_batch_size = kwargs.get('eval_batch_size', 32768)
         self.frequency_penalty = kwargs.get('frequency_penalty', 0.0)
@@ -48,33 +48,31 @@ class Settings(BaseSettings):
             temperature=0.35,
             top_p=0.95,
             min_p=0.05,
-            n_predict=32768
+            max_tokens=32768
         ),    
         "exaone-3.5": LLMProfile(
             temperature=0.45,
             top_p=0.88,
             min_p=0.04,
-            n_predict=32768
+            max_tokens=32768
         ),
          "granite-3.1-2b": LLMProfile(
             temperature=0.35,  
             top_p=0.95,       
             min_p=0.05,       
-            n_predict=131072   # Maximizing context
+            max_tokens=131072   # Maximizing context
         ),
         "granite-3.1-8b": LLMProfile(
             temperature=0.35,  
             top_p=0.95,       
             min_p=0.05,       
-            n_predict=98304   # Maximizing context for my 12gb vram gpu
+            max_tokens=98304   # Maximizing context for my 12gb vram gpu
         ),
         "default": LLMProfile(
             temperature=0.35,
             top_p=0.95,
             min_p=0.05,
-            n_predict=32768,
-            context_size=32768,
-            eval_batch_size=32768
+            max_tokens=32768,       
         )
     }
     
