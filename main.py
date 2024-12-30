@@ -1,14 +1,15 @@
 import argparse
 import logging
 import os
-from loaders.base_loader import DocumentLoader
-from vector_store.chroma_store import ChromaStore
+from pathlib import Path
+from loaders.loader_factory import LoaderFactory
+from vector_store.chroma_repository import ChromaRepository
 from llm.lm_studio import LMStudioService
 from config import settings
 
 # Configure logging
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -63,6 +64,9 @@ def main():
     parser.add_argument('--file-types', type=str, default='.py,.md,.json', 
                     dest='file_types',
                     help='Comma-separated file extensions to process (default: .py,.md,.json)')
+    parser.add_argument('--max_depth', type=int, default=settings.WEB_MAX_DEPTH, 
+                    help='Maximum depth for web crawling (default: %(default)s)'
+)
     parser.add_argument('--query', type=str, help='Query to search')
     parser.add_argument('--reset', action='store_true', help='Reset the vector store')
     parser.add_argument('--prompt', type=str, help='Override default prompt template')
@@ -103,15 +107,11 @@ def main():
     model_profile = settings.get_llm_profile(profile_name)
 
     generation_limit = args.max_tokens if args.max_tokens is not None else args.n_predict
-
-
-    search_params = {'k': args.search_k if args.search_k is not None else settings.SEARCH_K}
-
     
     # Single parameter initialization block
     params = {
         'temperature': model_profile.temperature,
-        'max_tokens': model_profile.max_tokens,
+        'max_tokens': generation_limit if generation_limit is not None else model_profile.max_tokens,
         'top_p': model_profile.top_p,
         'min_p': model_profile.min_p,
         'top_k': model_profile.top_k,
@@ -123,44 +123,63 @@ def main():
         if hasattr(args, key) and getattr(args, key) is not None:
             params[key] = getattr(args, key)
 
+    # Initialize repository
+    repository = ChromaRepository()
+
     # Handle reset first, before any initialization
     if args.reset:
-        store = ChromaStore()
-        store.reset_store()
-        DocumentLoader().reset_processed_files()
-        logger.info("Vector store and document tracking have been reset")
+        repository.reset()
+        # Also reset file loader tracking
+        file_loader = LoaderFactory.create('file')
+        file_loader.reset_processed_files()
+        # Reset web loader tracking
+        web_loader = LoaderFactory.create('web')
+        web_loader.reset_processed_files()
+        logger.info("Vector store and all document tracking have been reset")
         return
-    
-    store = ChromaStore()
-    logger.info("Vector store initialized")
-        
+            
+    # Process single file
     if args.file:
-        loader = DocumentLoader()
+        loader = LoaderFactory.create('file')
         documents = loader.load_file(args.file)
-        store.add_documents(documents)
-        logger.info(f"Processed and stored {len(documents)} chunks")
+        if documents:
+            repository.add_documents(documents)
+            logger.info(f"Processed and stored file: {args.file}")
+
+    # Process website
     if args.website:
-        logger.info(f"Processing website: {args.website}")
-        store = ChromaStore()
-        store.add_website_content([args.website])
-        
+        loader = LoaderFactory.create('web')
+        documents = loader.process_website(
+            args.website, 
+            max_depth=args.max_depth
+        )
+        if documents:
+            repository.add_documents(documents)
+            logger.info(f"Processed and stored website: {args.website}")
+
+    # Process websites from file
     if args.websites_file:
         with open(args.websites_file, 'r') as f:
             urls = [line.strip() for line in f if line.strip()]
-        logger.info(f"Processing {len(urls)} websites from file")
-        store = ChromaStore()
-        store.add_website_content(urls)
+        loader = LoaderFactory.create('web', max_depth=args.max_depth)
+        for url in urls:
+            documents = loader.process_website(url)
+            if documents:
+                repository.add_documents(documents)
+        logger.info(f"Processed {len(urls)} websites from file")
+    
+    # Process directory
     if args.directory:
         supported_extensions = tuple(args.file_types.split(','))
+        loader = LoaderFactory.create('file')
         for root, _, files in os.walk(args.directory):
             for file in files:
                 file_path = os.path.join(root, file)
                 if should_process_file(file_path, supported_extensions):
-                    logger.info(f"Processing file: {file_path}")
-                    loader = DocumentLoader()
                     documents = loader.load_file(file_path)
                     if documents:  # Only add if documents were successfully loaded
-                        store.add_documents(documents)
+                        repository.add_documents(documents)
+                        logger.info(f"Processed file: {file_path}")
         
     if args.query:
         logger.info(f"Processing query: {args.query}")
@@ -168,18 +187,26 @@ def main():
             f"Using parameters:\n" + 
             "\n".join(f"- {k.title()}: {v}" for k, v in params.items())
         )
+         # Direct search using repository
+        documents = repository.search(
+            query=args.query, 
+            k=args.search_k
+        )
         # Get the retriever with search params
-        retriever = store.vector_store.as_retriever(search_kwargs={'k': args.search_k})
+        retriever = repository.get_retriever(search_k= args.search_k)   
         llm_service = LMStudioService(
             vector_store=retriever, 
+            #documents=documents,
             **params
         )
-
+        
+        # Handle custom prompt
         if args.prompt:
             logger.info(f"Using custom prompt: {args.prompt}")
             llm_service.set_prompt_template(args.prompt)
         
+        # Get and display response
         response = llm_service.get_response(args.query)
-        display_llm_response(response)  # Use the new display function
+        display_llm_response(response)  
 if __name__ == "__main__":
     main()

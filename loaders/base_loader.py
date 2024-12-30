@@ -1,8 +1,8 @@
-
+from abc import ABC, abstractmethod
 import hashlib
 import json
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Union
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import logging
@@ -10,8 +10,10 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-class DocumentLoader:
-    def __init__(self):
+class DocumentLoader(ABC):
+    def __init__(self, chunk_size: Optional[int] = None):
+        self.chunk_size = chunk_size
+
         self.processed_files_path = Path("processed_files.json")
         self.processed_files = self._load_processed_files()
 

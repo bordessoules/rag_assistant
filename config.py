@@ -38,9 +38,13 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str = "http://localhost:1234/v1"
     
     # Search and Processing Settings
-    SEARCH_K: int = 7
+    SEARCH_K: int = 15
     CHUNK_SIZE: int = 10000
     CHUNK_OVERLAP: int = 200
+
+     # Web Loader Settings
+    WEB_MAX_DEPTH: int = 2
+    WEB_CHUNK_SIZE: int = 10000
     
     # Model Profiles - declared as a field
     LLM_PROFILES: Dict[str, LLMProfile] = {

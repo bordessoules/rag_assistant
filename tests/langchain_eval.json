@@ -1,0 +1,30 @@
+{
+    "test_suite": "langchain_comprehension",
+    "configurations": [
+        {
+            "name": "langchain_definition",
+            "command": "python main.py --prompt \"What is LangChain and what is its main purpose?\"",
+            "expected": "framework"
+        },
+        {
+            "name": "langchain_components",
+            "command": "python main.py --prompt \"List the main components and features of LangChain framework\"",
+            "expected": "components"
+        },
+        {
+            "name": "langchain_use_cases",
+            "command": "python main.py --prompt \"What are the primary use cases and applications that can be built with LangChain?\"",
+            "expected": "applications"
+        },
+        {
+            "name": "langchain_integration",
+            "command": "python main.py --prompt \"How does LangChain integrate with LLMs and what advantages does it provide?\"",
+            "expected": "integration"
+        },
+        {
+            "name": "langchain_development",
+            "command": "python main.py --prompt \"Explain how LangChain helps in developing LLM-powered applications compared to building from scratch\"",
+            "expected": "development"
+        }
+    ]
+}
