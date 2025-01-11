@@ -1,9 +1,9 @@
 import argparse
 import logging
 import os
-from pathlib import Path
-from loaders.loader_factory import LoaderFactory
-from vector_store.chroma_repository import ChromaRepository
+from llm.task_manager import TaskManager
+from loaders.factory import LoaderFactory
+from vector_store.repository.chroma import ChromaRepository
 from llm.lm_studio import LMStudioService
 from config import settings
 
@@ -56,6 +56,7 @@ def display_llm_response(response):
     #         print(f"\nDocument [{idx}]:{format_source_document_slim(doc)}")
 
 def main():
+    print("\n=== RAG Assistant Starting ===")
     parser = argparse.ArgumentParser(description='RAG Assistant CLI')
     parser.add_argument('--file', type=str, help='Single file to process')
     parser.add_argument('--website', type=str, help='URL to process and add to knowledge base')
@@ -101,6 +102,7 @@ def main():
                     help='Name of the LLM profile to use')
 
     args = parser.parse_args()
+    print(f"\nReceived arguments: {args}")
     logger.info(f"CLI Arguments: {args}")
 
     profile_name = args.model_profile if args.model_profile else args.model_name
@@ -125,19 +127,21 @@ def main():
 
     # Initialize repository
     repository = ChromaRepository()
-
     # Handle reset first, before any initialization
     if args.reset:
+        logger.debug("Starting reset operation")
         repository.reset()
         # Also reset file loader tracking
         file_loader = LoaderFactory.create('file')
         file_loader.reset_processed_files()
+        logger.info("File loader tracking reset")
+
         # Reset web loader tracking
         web_loader = LoaderFactory.create('web')
         web_loader.reset_processed_files()
         logger.info("Vector store and all document tracking have been reset")
         return
-            
+    
     # Process single file
     if args.file:
         loader = LoaderFactory.create('file')
@@ -170,12 +174,14 @@ def main():
     
     # Process directory
     if args.directory:
+        logger.info(f"Processing directory: {args.directory}")
         supported_extensions = tuple(args.file_types.split(','))
         loader = LoaderFactory.create('file')
         for root, _, files in os.walk(args.directory):
             for file in files:
                 file_path = os.path.join(root, file)
                 if should_process_file(file_path, supported_extensions):
+                    logger.debug(f"Processing file: {file_path}")
                     documents = loader.load_file(file_path)
                     if documents:  # Only add if documents were successfully loaded
                         repository.add_documents(documents)
@@ -187,16 +193,10 @@ def main():
             f"Using parameters:\n" + 
             "\n".join(f"- {k.title()}: {v}" for k, v in params.items())
         )
-         # Direct search using repository
-        documents = repository.search(
-            query=args.query, 
-            k=args.search_k
-        )
         # Get the retriever with search params
-        retriever = repository.get_retriever(search_k= args.search_k)   
+        retriever = repository.get_retriever(search_k=args.search_k)   
         llm_service = LMStudioService(
             vector_store=retriever, 
-            #documents=documents,
             **params
         )
         
@@ -205,8 +205,8 @@ def main():
             logger.info(f"Using custom prompt: {args.prompt}")
             llm_service.set_prompt_template(args.prompt)
         
-        # Get and display response
-        response = llm_service.get_response(args.query)
-        display_llm_response(response)  
-if __name__ == "__main__":
+        task_manager = TaskManager(llm_service)
+        response = task_manager.process_query(args.query)
+        display_llm_response(response)
+if __name__ == "__main__": 
     main()

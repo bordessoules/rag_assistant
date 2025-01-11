@@ -6,6 +6,8 @@ from langchain.prompts import PromptTemplate
 import requests
 from config import settings
 from typing import Optional, List
+from agents.function_coordinator import FunctionCoordinator
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ class CustomLMStudio(LLM):
                 f"{self.base_url}/chat/completions",
                 headers=headers,
                 json=data,
-                timeout=600 # Explicit timeout
+                timeout=2400 # Explicit timeout
             )
             response.raise_for_status()
             
@@ -103,61 +105,53 @@ class CustomLMStudio(LLM):
     @property
     def _llm_type(self) -> str:
         return "custom_lm_studio"
+    
 class LMStudioService:
-    def __init__(self, 
-        vector_store,
-        temperature=0.35,
-        max_tokens=8192,
-        repeat_penalty=1.1,
-        top_p=0.95,
-        min_p=0.05,
-        top_k=40,
-        frequency_penalty=0.0,
-        presence_penalty=0.0):
-        
-        self.llm = CustomLMStudio(
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            min_p=min_p,
-            top_k=top_k,
-            repeat_penalty=repeat_penalty,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty
-        )
-        logger.info("LLM initialized")
+    def __init__(self, vector_store, **params):
+        self.llm = CustomLMStudio(**params)
+        self.function_registry = {}
+        self.function_coordinator = FunctionCoordinator(self.llm)
         
         self.prompt_template = """You are a helpful AI assistant. Use the following context to answer the question.
                 
         Context: {context}
-        
         Question: {question}
-       
         Answer: """
         
-        self._create_qa_chain(vector_store)
+        # Get retriever first
+        self.retriever = vector_store
+        # Initialize QA chain
+        self.qa_chain = self._create_qa_chain(self.retriever)
         logger.info("QA chain created")
+    
+    def register_function(self, name: str, description: str, parameters: dict):
+        # Validates with existing prompt template system
+        self.function_coordinator.register_function(
+            name=name,
+            description=description,
+            parameters=parameters
+        )
+        # Update QA chain prompt to include function context
+        self._update_qa_chain_prompt()
         
-    def _create_qa_chain(self, vector_store):
-        logger.info("Creating QA chain")
-        self.qa_chain = RetrievalQA.from_chain_type(
+    def _create_qa_chain(self, retriever):
+        return RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=vector_store,
+            retriever=retriever,
             return_source_documents=True,
             chain_type_kwargs={
                 "prompt": PromptTemplate(
                     template=self.prompt_template,
-                    input_variables=["context", "question"]  # Explicitly define both variables
-                ),
-                "document_variable_name": "context"  # Add this line
+                    input_variables=["context", "question"]
+                )
             }
         )
         
     def set_prompt_template(self, template: str):
         logger.info(f"Setting new prompt template: {template}")
         self.prompt_template = template
-        self._create_qa_chain(self.qa_chain.retriever)
+        self._create_qa_chain(self.retriever)
         
     def get_response(self, query: str):
         logger.info(f"Processing query: {query}")
@@ -167,3 +161,22 @@ class LMStudioService:
             "answer": response["result"],
             "source_documents": response["source_documents"]
         }
+
+    def _update_qa_chain_prompt(self):
+        """Update QA chain prompt to include registered functions"""
+        function_context = "\n".join([
+            f"Function: {f['name']}\nDescription: {f['description']}\nParameters: {f['parameters']}"
+            for f in self.function_registry.values()
+        ])
+        
+        self.prompt_template = f"""You are a helpful AI assistant. Use the following context and available functions to answer the question.
+        
+        Available Functions:
+        {function_context}
+        
+        Context: {{context}}
+        Question: {{question}}
+        Answer: """
+        
+        # Recreate QA chain with existing retriever
+        self.qa_chain = self._create_qa_chain(self.retriever)

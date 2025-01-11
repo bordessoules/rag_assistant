@@ -163,3 +163,4 @@ if __name__ == "__main__":
     )
     successful, total = runner.run_tests()
     logging.info(f"\nTest suite completed: {successful}/{total} tests successful")
+
