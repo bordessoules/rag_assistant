@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class LLMProfile:
     """Profile configuration for Language Models"""
-    temperature: float = 0.35
+    temperature: float = 0.1
     top_p: float = 0.95
     min_p: float = 0.05
     top_k: int = 40
@@ -90,7 +90,7 @@ class Settings(BaseSettings):
     COMPLETION_ENDPOINT: str = "/completions"
     
     # Search and Processing Settings
-    SEARCH_K: int = 15
+    SEARCH_K: int = 50
     CHUNK_SIZE: int = 10000
     CHUNK_OVERLAP: int = 200
     MIN_CHUNK_SIZE: int = 100  # Added minimum chunk size

@@ -58,6 +58,7 @@ def display_llm_response(response):
 def main():
     print("\n=== RAG Assistant Starting ===")
     parser = argparse.ArgumentParser(description='RAG Assistant CLI')
+    parser.add_argument('-i', '--interactive', action='store_true', help='Enter interactive mode')
     parser.add_argument('--file', type=str, help='Single file to process')
     parser.add_argument('--website', type=str, help='URL to process and add to knowledge base')
     parser.add_argument('--websites-file', type=str, help='File containing list of URLs to process')
@@ -186,8 +187,24 @@ def main():
                     if documents:  # Only add if documents were successfully loaded
                         repository.add_documents(documents)
                         logger.info(f"Processed file: {file_path}")
-        
-    if args.query:
+
+    # Handle custom prompt
+        if args.prompt:
+            logger.info(f"Using custom prompt: {args.prompt}")
+            llm_service.set_prompt_template(args.prompt)    
+    # if args.query:
+    #     logger.info(f"Processing query: {args.query}")
+    #     logger.info(
+    #         f"Using parameters:\n" + 
+    #         "\n".join(f"- {k.title()}: {v}" for k, v in params.items())
+    #     )
+    #     # Get the retriever with search params
+    #     retriever = repository.get_retriever(search_k=args.search_k)   
+    #     llm_service = LMStudioService(
+    #         vector_store=retriever, 
+    #         **params
+    #     )
+    if args.query or not any([args.file, args.website, args.websites_file, args.directory, args.reset]):
         logger.info(f"Processing query: {args.query}")
         logger.info(
             f"Using parameters:\n" + 
@@ -200,13 +217,55 @@ def main():
             **params
         )
         
-        # Handle custom prompt
-        if args.prompt:
-            logger.info(f"Using custom prompt: {args.prompt}")
-            llm_service.set_prompt_template(args.prompt)
-        
         task_manager = TaskManager(llm_service)
-        response = task_manager.process_query(args.query)
-        display_llm_response(response)
+        
+        # Use provided query or default analysis prompt
+        query_text = args.query if args.query else llm_service.default_analysis_prompt
+        
+        # First pass with TEP validation
+        initial_response = task_manager.process_query(query_text)
+        display_llm_response({"answer": "INITIAL ANALYSIS:\n" + initial_response["answer"]})
+
+        # Second pass validation
+        validation_query = """Let's verify the previous analysis step by step:
+
+1. Technical Accuracy:
+   - Are the architectural claims supported?
+   - Do the component relationships make sense?
+   - Is the technical terminology correct?
+
+2. Implementation Correctness:
+   - Are the code examples well-structured?
+   - Do they follow best practices?
+   - Would they work in practice?
+
+3. Completeness Check:
+   - Were all key points addressed?
+   - Are there any gaps in the analysis?
+   - What additional insights could be valuable?
+
+Reason through each point systematically."""
+        
+        validation_response = task_manager.process_query(validation_query)
+        display_llm_response({"answer": "VALIDATION:\n" + validation_response["answer"]})
+
+        # Handle interactive mode if requested
+    if args.interactive:
+        print("\n=== Entering Interactive Mode ===")
+        print("Type 'exit' to quit, or enter your query")
+        
+        while True:
+            try:
+                query = input("\nQuery> ").strip()
+                if query.lower() == 'exit':
+                    print("Goodbye!")
+                    break
+                if query:  # Only process non-empty queries
+                    response = task_manager.process_query(query)
+                    display_llm_response({"answer": response["answer"]})
+            except KeyboardInterrupt:
+                print("\nExiting interactive mode...")
+                break
+
 if __name__ == "__main__": 
     main()

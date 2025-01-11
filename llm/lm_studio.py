@@ -111,7 +111,31 @@ class LMStudioService:
         self.llm = CustomLMStudio(**params)
         self.function_registry = {}
         self.function_coordinator = FunctionCoordinator(self.llm)
-        
+        self.default_analysis_prompt = """Let's think about this step by step:
+
+1. First, let's map the core components:
+   - What are the main modules?
+   - How do they connect?
+   - What dependencies exist?
+
+2. Next, let's examine patterns:
+   - Which design patterns are used?
+   - Why were these choices made?
+   - What benefits do they provide?
+
+3. Let's analyze the processing pipeline:
+   - How does data flow through the system?
+   - Where are potential bottlenecks?
+   - What optimizations are possible?
+
+4. Based on our analysis:
+   - What concrete improvements can we make?
+   - How would we implement them?
+   - What would be the impact?
+
+Think through each point carefully and explain your reasoning.
+"""
+
         self.prompt_template = """You are a helpful AI assistant. Use the following context to answer the question.
                 
         Context: {context}
