@@ -1,13 +1,10 @@
 import logging
 from langchain_core.language_models.llms import LLM
-#from langchain_community.llms import LLM
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 import requests
 from config import settings
 from typing import Optional, List
-from agents.function_coordinator import FunctionCoordinator
-
 
 logger = logging.getLogger(__name__)
 
@@ -110,31 +107,39 @@ class LMStudioService:
     def __init__(self, vector_store, **params):
         self.llm = CustomLMStudio(**params)
         self.function_registry = {}
-        self.function_coordinator = FunctionCoordinator(self.llm)
-        self.default_analysis_prompt = """Let's think about this step by step:
+        self.default_analysis_prompt = """Execute a comprehensive technical deep-dive:
 
-1. First, let's map the core components:
-   - What are the main modules?
-   - How do they connect?
-   - What dependencies exist?
+1. Architecture & System Design:
+   * Map complete component hierarchy and inheritance chains
+   * Identify all design patterns and SOLID principles applied
+   * Analyze coupling metrics between components
+   * Evaluate system boundaries and integration points
 
-2. Next, let's examine patterns:
-   - Which design patterns are used?
-   - Why were these choices made?
-   - What benefits do they provide?
+2. Implementation Analysis:
+   * Review thread safety and concurrency handling
+   * Examine error propagation and recovery mechanisms
+   * Analyze memory management and resource utilization
+   * Evaluate type system usage and interface contracts
 
-3. Let's analyze the processing pipeline:
-   - How does data flow through the system?
-   - Where are potential bottlenecks?
-   - What optimizations are possible?
+3. Performance Engineering:
+   * Profile critical execution paths
+   * Identify algorithmic complexity bottlenecks
+   * Analyze space-time trade-offs in current implementation
+   * Examine caching strategies and data locality
 
-4. Based on our analysis:
-   - What concrete improvements can we make?
-   - How would we implement them?
-   - What would be the impact?
+4. Technical Debt Assessment:
+   * Identify code duplication and abstraction leaks
+   * Review dependency management and version constraints
+   * Analyze test coverage gaps and edge cases
+   * Evaluate documentation completeness and accuracy
 
-Think through each point carefully and explain your reasoning.
-"""
+5. Advanced Optimization Opportunities:
+   * Propose parallel processing implementations
+   * Design caching layer improvements
+   * Suggest architectural refactoring for scalability
+   * Detail concrete code examples for each improvement
+
+Provide specific code examples and complexity analysis for each point."""
 
         self.prompt_template = """You are a helpful AI assistant. Use the following context to answer the question.
                 

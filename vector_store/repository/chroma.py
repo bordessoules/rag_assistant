@@ -3,7 +3,8 @@ from langchain_chroma import Chroma
 import chromadb
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
-
+import shutil
+import os
 import logging
 from vector_store.repository.base import VectorStoreRepository
 from vector_store.search.expansion import QueryExpander
@@ -13,6 +14,21 @@ from vector_store.search.strategies import HybridSearch, SearchStrategy, Similar
 logger = logging.getLogger(__name__)
 
 class ChromaRepository(VectorStoreRepository):
+    
+    @staticmethod
+    def reset() -> None:
+        """Static method to clean up storage without instantiation"""
+        persist_directory = "chroma_db"
+        if os.path.exists(persist_directory):
+            shutil.rmtree(persist_directory)
+            
+        # Clean tracking files
+        for file in ['processed_files.json', 'processed_urls.json']:
+            if os.path.exists(file):
+                os.remove(file)
+                
+        logger.info("Storage reset complete")
+    
     def __init__(self):
         embeddings = HuggingFaceEmbeddings(
             model_name="intfloat/e5-large-v2",
@@ -36,6 +52,12 @@ class ChromaRepository(VectorStoreRepository):
         )
         logger.info("ChromaRepository initialized")
 
+    def get_retriever(self, search_k: Optional[int] = None):
+        """Get retriever with configured search parameters"""
+        return self.db.as_retriever(
+            search_kwargs={"k": search_k if search_k else 4}
+    )
+
     def add_documents(self, documents: List[Document]) -> None:
         logger.debug(f"Adding {len(documents)} documents to vector store")
         self.db.add_documents(documents)
@@ -46,16 +68,6 @@ class ChromaRepository(VectorStoreRepository):
         results = self.db.similarity_search(query, k=k)
         logger.info(f"Found {len(results)} results")
         return results
-
-    def reset(self) -> None:
-        logger.debug("Resetting ChromaRepository")
-        self.db._client.reset()
-        logger.info("ChromaRepository reset complete")
-
-    def get_retriever(self, search_k: Optional[int] = None):
-        return self.db.as_retriever(
-            search_kwargs={"k": search_k if search_k else 4}
-        )
     
 class RetrievalPipeline:
     """Pipeline for enhancing retrieval with configurable search strategies"""

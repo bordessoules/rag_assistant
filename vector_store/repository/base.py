@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 from langchain_core.documents import Document
 
 class VectorStoreRepository(ABC):
@@ -10,9 +10,14 @@ class VectorStoreRepository(ABC):
     @abstractmethod
     def add_documents(self, documents: List[Document]) -> None:
         pass
-    
     @abstractmethod
-    def reset(self) -> None:
+    def get_retriever(self, search_k: Optional[int] = None):
+        """Get retriever with search parameters"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def reset() -> None:
         pass
 
 class VectorStoreError(Exception):
