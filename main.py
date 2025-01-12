@@ -9,7 +9,7 @@ from config import settings
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -126,22 +126,16 @@ def main():
         if hasattr(args, key) and getattr(args, key) is not None:
             params[key] = getattr(args, key)
 
-    # Initialize repository
-    repository = ChromaRepository()
-    # Handle reset first, before any initialization
+    
+    # Handle reset before repository initialization
     if args.reset:
         logger.debug("Starting reset operation")
-        repository.reset()
-        # Also reset file loader tracking
-        file_loader = LoaderFactory.create('file')
-        file_loader.reset_processed_files()
-        logger.info("File loader tracking reset")
-
-        # Reset web loader tracking
-        web_loader = LoaderFactory.create('web')
-        web_loader.reset_processed_files()
+        ChromaRepository.reset()  # Static method for cleanup
         logger.info("Vector store and all document tracking have been reset")
         return
+    
+    # Initialize repository
+    repository = ChromaRepository()
     
     # Process single file
     if args.file:
@@ -151,6 +145,7 @@ def main():
             repository.add_documents(documents)
             logger.info(f"Processed and stored file: {args.file}")
 
+    
     # Process website
     if args.website:
         loader = LoaderFactory.create('web')
@@ -189,21 +184,10 @@ def main():
                         logger.info(f"Processed file: {file_path}")
 
     # Handle custom prompt
-        if args.prompt:
-            logger.info(f"Using custom prompt: {args.prompt}")
-            llm_service.set_prompt_template(args.prompt)    
-    # if args.query:
-    #     logger.info(f"Processing query: {args.query}")
-    #     logger.info(
-    #         f"Using parameters:\n" + 
-    #         "\n".join(f"- {k.title()}: {v}" for k, v in params.items())
-    #     )
-    #     # Get the retriever with search params
-    #     retriever = repository.get_retriever(search_k=args.search_k)   
-    #     llm_service = LMStudioService(
-    #         vector_store=retriever, 
-    #         **params
-    #     )
+    if args.prompt:
+        logger.info(f"Using custom prompt: {args.prompt}")
+        llm_service.set_prompt_template(args.prompt)    
+    
     if args.query or not any([args.file, args.website, args.websites_file, args.directory, args.reset]):
         logger.info(f"Processing query: {args.query}")
         logger.info(
@@ -227,44 +211,68 @@ def main():
         display_llm_response({"answer": "INITIAL ANALYSIS:\n" + initial_response["answer"]})
 
         # Second pass validation
-        validation_query = """Let's verify the previous analysis step by step:
+        validation_query = """Execute rigorous technical validation including the following steps considering the provided analysis results:
 
-1. Technical Accuracy:
-   - Are the architectural claims supported?
-   - Do the component relationships make sense?
-   - Is the technical terminology correct?
+1. Implementation Verification:
+   * Validate thread safety in concurrent operations
+   * Verify memory leak prevention mechanisms
+   * Test error handling edge cases
+   * Analyze API contract compliance
 
-2. Implementation Correctness:
-   - Are the code examples well-structured?
-   - Do they follow best practices?
-   - Would they work in practice?
+2. Performance Validation:
+   * Measure algorithmic complexity in key operations
+   * Verify resource utilization patterns
+   * Test scalability under load
+   * Profile memory usage patterns
 
-3. Completeness Check:
-   - Were all key points addressed?
-   - Are there any gaps in the analysis?
-   - What additional insights could be valuable?
+3. Architecture Verification:
+   * Validate component coupling metrics
+   * Test system boundaries
+   * Verify interface contracts
+   * Analyze dependency graphs
 
-Reason through each point systematically."""
+Provide concrete metrics and code examples for each validation point."""
         
         validation_response = task_manager.process_query(validation_query)
         display_llm_response({"answer": "VALIDATION:\n" + validation_response["answer"]})
 
-        # Handle interactive mode if requested
+   
+    # Enhanced interactive mode with technical depth WIP
     if args.interactive:
-        print("\n=== Entering Interactive Mode ===")
-        print("Type 'exit' to quit, or enter your query")
+        print("\n=== Advanced Technical Analysis Mode ===")
+        print("Enter complex technical queries or 'exit' to quit")
         
         while True:
             try:
-                query = input("\nQuery> ").strip()
+                query = input("\nTechnical Query> ").strip()
                 if query.lower() == 'exit':
-                    print("Goodbye!")
                     break
-                if query:  # Only process non-empty queries
-                    response = task_manager.process_query(query)
-                    display_llm_response({"answer": response["answer"]})
+                if query:
+                    # Enhanced validation chain
+                    initial_response = task_manager.process_query(query)
+                    technical_validation = task_manager.process_query(
+                        f"Perform technical validation of the solution:\n{initial_response['answer']}\n"
+                        "1. Verify thread safety\n"
+                        "2. Analyze complexity\n"
+                        "3. Test edge cases\n"
+                        "4. Validate error handling"
+                    )
+                    performance_analysis = task_manager.process_query(
+                        f"Analyze performance implications:\n{initial_response['answer']}\n"
+                        "1. Memory usage\n"
+                        "2. CPU utilization\n"
+                        "3. I/O patterns\n"
+                        "4. Scalability metrics"
+                    )
+                    
+                    display_llm_response({
+                        "answer": (
+                            "TECHNICAL SOLUTION:\n" + initial_response["answer"] + 
+                            "\n\nVALIDATION:\n" + technical_validation["answer"] +
+                            "\n\nPERFORMANCE ANALYSIS:\n" + performance_analysis["answer"]
+                        )
+                    })
             except KeyboardInterrupt:
-                print("\nExiting interactive mode...")
                 break
 
 if __name__ == "__main__": 
