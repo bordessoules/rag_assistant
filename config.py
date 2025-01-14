@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class LLMProfile:
     """Profile configuration for Language Models"""
-    temperature: float = 0.1
+    temperature: float = 0.35
     top_p: float = 0.95
     min_p: float = 0.05
     top_k: int = 40

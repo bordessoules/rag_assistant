@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from llm.prompt_manager import PromptManager
 from llm.task_manager import TaskManager
 from loaders.factory import LoaderFactory
 from vector_store.repository.chroma import ChromaRepository
@@ -189,52 +190,45 @@ def main():
         llm_service.set_prompt_template(args.prompt)    
     
     if args.query or not any([args.file, args.website, args.websites_file, args.directory, args.reset]):
-        logger.info(f"Processing query: {args.query}")
-        logger.info(
-            f"Using parameters:\n" + 
-            "\n".join(f"- {k.title()}: {v}" for k, v in params.items())
-        )
-        # Get the retriever with search params
-        retriever = repository.get_retriever(search_k=args.search_k)   
-        llm_service = LMStudioService(
-            vector_store=retriever, 
-            **params
-        )
-        
+        logger.info(f"Processing with parameters:\n" + 
+            "\n".join(f"- {k.title()}: {v}" for k, v in params.items()))
+            
+        # Initialize components
+        retriever = repository.get_retriever(search_k=args.search_k)
+        llm_service = LMStudioService(vector_store=retriever, **params)
         task_manager = TaskManager(llm_service)
-        
-        # Use provided query or default analysis prompt
-        query_text = args.query if args.query else llm_service.default_analysis_prompt
-        
-        # First pass with TEP validation
-        initial_response = task_manager.process_query(query_text)
-        display_llm_response({"answer": "INITIAL ANALYSIS:\n" + initial_response["answer"]})
+        prompt_manager = PromptManager('config/prompts.json')
 
-        # Second pass validation
-        validation_query = """Execute rigorous technical validation including the following steps considering the provided analysis results:
+        if args.query:
+            # Handle direct query
+            logger.info(f"Processing user query: {args.query}")
+            response = llm_service.get_response(args.query)
+            display_llm_response(response)
+        else:
+            # Execute predefined scenarios
+            logger.info("Executing analysis scenarios")
 
-1. Implementation Verification:
-   * Validate thread safety in concurrent operations
-   * Verify memory leak prevention mechanisms
-   * Test error handling edge cases
-   * Analyze API contract compliance
+            logger.info("\n=== Quick Analysis ===")
+            task_manager.reset_context()  # Reset before new chain
+            quick_results = task_manager.execute_chain('quick_analysis', prompt_manager.get_prompt('initial_analysis'))
+            display_llm_response(quick_results['initial_analysis'])
 
-2. Performance Validation:
-   * Measure algorithmic complexity in key operations
-   * Verify resource utilization patterns
-   * Test scalability under load
-   * Profile memory usage patterns
+            logger.info("\n=== Step-by-Step Analysis ===")
+            task_manager.reset_context()  # Reset before new chain
+            detailed_results = task_manager.execute_chain('step_by_step', prompt_manager.get_prompt('initial_analysis'))
+            for step, result in detailed_results.items():
+                print(f"\n--- {step.replace('_', ' ').title()} ---")
+                display_llm_response(result)
 
-3. Architecture Verification:
-   * Validate component coupling metrics
-   * Test system boundaries
-   * Verify interface contracts
-   * Analyze dependency graphs
+            logger.info("\n=== Single-Pass Complete Analysis ===")
+            task_manager.reset_context()  # Reset before new chain
+            complete_results = task_manager.execute_chain('single_pass', prompt_manager.get_prompt('complete_analysis'))
+            display_llm_response(complete_results['complete_analysis'])
 
-Provide concrete metrics and code examples for each validation point."""
-        
-        validation_response = task_manager.process_query(validation_query)
-        display_llm_response({"answer": "VALIDATION:\n" + validation_response["answer"]})
+            logger.info("\n=== Marco-o1 Analysis ===")
+            task_manager.reset_context()  # Reset before new chain
+            mcts_results = task_manager.execute_chain('marco_optimized', prompt_manager.get_prompt('marco_mcts_analysis'))
+            display_llm_response(mcts_results['marco_mcts_analysis'])
 
    
     # Enhanced interactive mode with technical depth WIP

@@ -1,0 +1,61 @@
+{
+    "single_prompts": {
+        "initial_analysis": {
+            "name": "Initial Reasoning",
+            "prompt": "Let's analyze this step-by-step:\n1. What are the main components and their purposes?\n2. How do these components interact?\n3. What design patterns are being used?\n4. What are the key technical decisions?\n\nFor each point, explain your reasoning and provide specific evidence."
+        },
+        "critical_review": {
+            "name": "Critical Evaluation",
+            "prompt": "Let's critically examine our previous analysis:\n1. What evidence supports each conclusion?\n2. Which assumptions need validation?\n3. Are there alternative interpretations?\n4. What technical constraints weren't considered?\n\nProvide specific examples for each point."
+        },
+        "practical_synthesis": {
+            "name": "Practical Conclusions",
+            "prompt": "Based on our analysis and review, let's synthesize practical insights:\n1. What are the key validated findings?\n2. What specific improvements are recommended?\n3. What implementation challenges should be considered?\n4. What are the priority actions?\n\nInclude concrete code examples where relevant."
+        },
+        "complete_analysis": {
+            "name": "Single-Pass Complete Analysis",
+            "prompt": "Execute this analysis chain of thought, clearly marking your reasoning at each step:\n\nSTEP 1 - Initial Technical Analysis:\n- First, identify the core components by examining:\n  * Key classes and their responsibilities\n  * Interface definitions and contracts\n  * Data flow patterns\n  * System boundaries\n- Then, map out interactions and dependencies\n- Finally, identify architectural patterns in use\n\nSTEP 2 - Critical Evaluation:\n- Review each finding from Step 1 by:\n  * Citing specific code evidence\n  * Testing assumptions against the codebase\n  * Considering edge cases and failure modes\n- Challenge each conclusion with 'what if' scenarios\n\nSTEP 3 - Practical Insights:\n- Synthesize findings into:\n  * Validated architectural decisions\n  * Concrete improvement opportunities\n  * Implementation risks and mitigations\n- Provide specific code examples for improvements\n\nFor each step, explicitly state your reasoning process and link conclusions to concrete evidence in the codebase."
+        },
+        "marco_mcts_analysis": {
+            "name": "MCTS Optimized Analysis",
+            "prompt": "Let's explore this systematically using MCTS:\n\nBranch 1: Core Analysis [32-token chunks]\n- What are the fundamental components?\n- How do they interact?\n- What patterns emerge?\n\nBranch 2: Alternative Paths [32-token chunks]\n- What other approaches exist?\n- What are their tradeoffs?\n- Which paths look most promising?\n\nReflection Point: Let's validate our search\n- Have we explored all critical paths?\n- Are our conclusions supported?\n\nFinal Synthesis [32-token chunks]\n- Combine strongest findings\n- Validate reasoning chain\n- Present optimal solution"
+        },
+        "marco_reflection_analysis": {
+            "name": "Reflection Enhanced Analysis",
+            "prompt": "Let's analyze with continuous reflection:\n\nPhase 1: Initial Exploration [32-token chunks]\n- What do we observe?\n- What patterns emerge?\nReflection: Are these observations complete?\n\nPhase 2: Deep Analysis [32-token chunks]\n- How do components connect?\n- What principles guide design?\nReflection: Have we missed any angles?\n\nPhase 3: Solution Synthesis [32-token chunks]\n- What conclusions emerge?\n- How do they fit together?\nFinal Reflection: Is our reasoning sound?"
+        }
+    },
+    "prompt_chains": {
+        "quick_analysis": {
+            "name": "Single Step Analysis",
+            "description": "Basic analysis using single prompt",
+            "steps": [
+                "initial_analysis"
+            ]
+        },
+        "step_by_step": {
+            "name": "Step-by-Step Analysis",
+            "description": "Detailed analysis broken into explicit steps",
+            "steps": [
+                "initial_analysis",
+                "critical_review",
+                "practical_synthesis"
+            ]
+        },
+        "single_pass": {
+            "name": "Single-Pass Complete",
+            "description": "Complete analysis in one detailed prompt",
+            "steps": [
+                "complete_analysis"
+            ]
+        },
+        "marco_optimized": {
+            "name": "Marco-o1 Optimized Chain",
+            "description": "Analysis leveraging MCTS and reflection",
+            "steps": [
+                "marco_mcts_analysis",
+                "marco_reflection_analysis"
+            ]
+        }
+    }
+}
